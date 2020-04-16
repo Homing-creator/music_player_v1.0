@@ -91,10 +91,6 @@ export default {
     },
     refresh () {
       getUploadList().then(res => {
-        // const resList = res.data.list
-        // resList.forEach(function (item, index) {
-        //   item.size = (item.size / 1024 / 1024).toFixed(1) + 'Mb'
-        // })
         this.tableData = res.data.list
       }).catch(err => {
         Message.error({

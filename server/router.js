@@ -221,19 +221,41 @@ router.post('/download', async function (request, response) {
 
 })
 
-router.get('/song', async function (request, response) {
+router.get('/file/:name', async function (request, response) {
   const options = {
+    root: path.join(__dirname, 'public/img'),
     dotfiles: 'deny',
     headers: {
       'x-timestamp': Date.now(),
       'x-sent': true,
-      'Content-Type': 'audio/mp3'
+      'content-type': 'image/png',
+      'token': 1
     }
   }
   try {
+    const fileName = request.params.name
+    console.log(fileName)
+    response.download(fileName, 'aaa',options)
+  } catch (e) {
+    console.log(e)
+    response.status(500).json({
+      message: e
+    })
+  }
+})
+router.get('/song', async function (request, response) {
+  // const options = {
+  //   dotfiles: 'deny',
+  //   headers: {
+  //     'x-timestamp': Date.now(),
+  //     'x-sent': true,
+  //     'Content-Type': 'audio/mp3'
+  //   }
+  // }
+  try {
     let songData = await mysqldbMD.selectOne('upload', { songID: request.query.id })
     songData = songData[0]
-
+    console.log(songData)
     const fileName = songData.fileName
     // response.download(path.join(__dirname, '/public/songs', fileName), options, function (err) {
     //   if (err) {
@@ -245,8 +267,11 @@ router.get('/song', async function (request, response) {
     //     // decrement a download credit, etc.
     //   }
     // })
-    response.download(path.join(__dirname, '/public/songs', fileName), options)
+    response.set('Content-Type', songData.mimeType)
+    console.log(response.headers)
+    response.download(path.join(__dirname, '/public/songs', fileName), fileName)
   } catch (e) {
+    console.log(e)
     response.status(500).json({
       message: e
     })

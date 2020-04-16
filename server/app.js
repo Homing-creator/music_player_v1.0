@@ -15,13 +15,14 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 app.all("*", function (req, res,next){
-  //设置允许跨域的域名，*代表允许任意域名跨域
+  // 设置允许跨域的域名，*代表允许任意域名跨域
   res.header("Access-Control-Allow-Origin", "*")
-  //允许的header类型
+  // 允许的header类型
   res.header("Access-Control-Allow-Headers", "Content-Type, Token")
-  //跨域允许的请求方式
+  // 跨域允许的请求方式
   res.header("Access-Control-Allow-Methods", "DELETE,PUT,POST,GET,OPTIONS")
-  //
+  // 跨域允许时间 单位 s 用于缓存 option 请求，达到允许时间内只有一次 option 的效果
+  res.header("Access-Control-Max-Age", "2592000")
   if (req.method.toLowerCase() === 'options')
     res.sendStatus(200)  //让options尝试请求快速结束
   else
