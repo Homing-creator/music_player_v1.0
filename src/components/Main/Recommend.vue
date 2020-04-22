@@ -1,15 +1,22 @@
 <template>
     <div>
-      <h1>Recommend</h1>
+        <v-netrecommend/>
+        <v-myrecommend/>
     </div>
 </template>
 
 <script>
+import NetReCommend from './Recommend/NetRecommend'
+import MyRecommend from './Recommend/MyRecommend'
+
 export default {
-  name: 'Recommend'
+  name: 'Recommend',
+  components: {
+    'v-netrecommend': NetReCommend,
+    'v-myrecommend': MyRecommend
+  }
 }
 </script>
 
 <style scoped lang="scss">
-
 </style>

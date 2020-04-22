@@ -49,14 +49,10 @@ export default {
       return this.$confirm(`确定移除 ${file.name}？`)
     },
     handleSuccess () {
-      Message.success({
-        message: '上传成功'
-      })
+      Message.success('上传成功')
     },
     handleError (error) {
-      Message.error({
-        message: error
-      })
+      Message.error(error)
     }
   }
 }
@@ -65,5 +61,9 @@ export default {
 <style scoped lang="scss">
 #upload-container {
   /*display: block;*/
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
 }
 </style>

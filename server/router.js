@@ -5,6 +5,7 @@ const mysqldbMD = require('./api/mysqldb')
 const tokenMD = require('./api/token')
 const encryptMD = require('./api/encryptAndDecrypt')
 const { upload } = require('./api/multer')
+const similarityMD = require('./api/similarity')
 
 const router = express.Router()
 
@@ -202,12 +203,56 @@ router.post('/uploadfile', upload.single('file'), function (request, response) {
   })
 })
 
-// 用户上传列表处理
+// 获取用户上传列表处理
 router.post('/uploadlist', async function (request, response) {
+  const token = request.headers['token']
+  tokenMD.verifyToken(token, async function (error, decode) {
+    // token 过期
+    if (error !== null) {
+      return response.status(403).json({
+        message: 'Token expired...'
+      })
+    }
+
+    try {
+      let userData = await mysqldbMD.selectOne('user', { userEmail: decode.email })
+      userData = userData[0]
+
+      const list = await mysqldbMD.selectAll('upload', { userId: userData.userId})
+
+      return response.status(200).json({
+        list
+      })
+    } catch (e) {
+      return response.status(500).json({
+        message: e
+      })
+    }
+  })
+})
+
+// 音乐下载处理
+router.get('/song', async function (request, response) {
   try {
-    const list = await mysqldbMD.selectAll('upload')
+    let songData = await mysqldbMD.selectOne('upload', { songId: request.query.id })
+    songData = songData[0]
+    const fileName = songData.fileName
+    response.set('Content-Type', songData.mimeType)
+    response.download(path.join(__dirname, '/public/songs', fileName), fileName)
+  } catch (e) {
+    response.status(500).json({
+      message: e
+    })
+  }
+})
+
+// 评论处理
+router.get('/comment', async function (request, response) {
+  const songId = request.query.songId
+  try {
+    const commentList = await mysqldbMD.selectAll('comment', { comMusicId: songId })
     return response.status(200).json({
-      list
+      commentList
     })
   } catch (e) {
     return response.status(500).json({
@@ -215,67 +260,151 @@ router.post('/uploadlist', async function (request, response) {
     })
   }
 })
-
-// 音乐下载处理
-router.post('/download', async function (request, response) {
-
-})
-
-router.get('/file/:name', async function (request, response) {
-  const options = {
-    root: path.join(__dirname, 'public/img'),
-    dotfiles: 'deny',
-    headers: {
-      'x-timestamp': Date.now(),
-      'x-sent': true,
-      'content-type': 'image/png',
-      'token': 1
+router.post('/comment', function (request, response) {
+  const token = request.headers['token']
+  tokenMD.verifyToken(token, async function (error, decode) {
+    // token 过期
+    if (error !== null) {
+      return response.status(403).json({
+        message: 'Token expired...'
+      })
     }
-  }
-  try {
-    const fileName = request.params.name
-    console.log(fileName)
-    response.download(fileName, 'aaa',options)
-  } catch (e) {
-    console.log(e)
-    response.status(500).json({
-      message: e
-    })
-  }
+
+    try {
+      let userData = await mysqldbMD.selectOne('user', { userEmail: decode.email })
+      userData = userData[0]
+
+      const body = request.body
+
+
+      await mysqldbMD.insert('comment', {
+        comMusicId: body.songId,
+        comUserId: userData.userId,
+        comUserName: userData.userName,
+        comContent: body.message
+      })
+
+      return response.status(200).json({
+        err_code: 30,
+        message: 'Comment success'
+      })
+    } catch (e) {
+      return response.status(500).json({
+        message: e
+      })
+    }
+  })
 })
-router.get('/song', async function (request, response) {
-  // const options = {
-  //   dotfiles: 'deny',
-  //   headers: {
-  //     'x-timestamp': Date.now(),
-  //     'x-sent': true,
-  //     'Content-Type': 'audio/mp3'
-  //   }
-  // }
-  try {
-    let songData = await mysqldbMD.selectOne('upload', { songID: request.query.id })
-    songData = songData[0]
-    console.log(songData)
-    const fileName = songData.fileName
-    // response.download(path.join(__dirname, '/public/songs', fileName), options, function (err) {
-    //   if (err) {
-    //     // Handle error, but keep in mind the response may be partially-sent
-    //     // so check res.headersSent
-    //     console.log(err)
-    //     next(err)
-    //   } else {
-    //     // decrement a download credit, etc.
-    //   }
-    // })
-    response.set('Content-Type', songData.mimeType)
-    console.log(response.headers)
-    response.download(path.join(__dirname, '/public/songs', fileName), fileName)
-  } catch (e) {
-    console.log(e)
-    response.status(500).json({
-      message: e
-    })
-  }
+
+// 收藏处理
+router.get('/collection', function (request, response) {
+  const token = request.headers['token']
+  tokenMD.verifyToken(token, async function (error, decode) {
+    // token 过期
+    if (error !== null) {
+      return response.status(403).json({
+        message: 'Token expired...'
+      })
+    }
+
+    try {
+      let userData = await mysqldbMD.selectOne('user', { userEmail: decode.email })
+      userData = userData[0]
+
+      const list = await mysqldbMD.selectAll('collection', { userId: userData.userId })
+      return response.status(200).json({
+        list
+      })
+    } catch (e) {
+      return response.status(500).json({
+        message: e
+      })
+    }
+  })
+})
+router.post('/collection', function (request, response) {
+  const token = request.headers['token']
+  tokenMD.verifyToken(token, async function (error, decode) {
+    // token 过期
+    if (error !== null) {
+      return response.status(403).json({
+        message: 'Token expired...'
+      })
+    }
+
+    try {
+      let userData = await mysqldbMD.selectOne('user', { userEmail: decode.email })
+      userData = userData[0]
+
+      await mysqldbMD.deleteOne('collection', { userId: userData.userId, songId: request.body.songId})
+      request.body.userId = userData.userId
+      await mysqldbMD.insert('collection', request.body)
+
+      return response.send('ok')
+    } catch (e) {
+      return response.status(500).json({
+        message: e
+      })
+    }
+  })
+})
+
+router.post('/cancelcollection', function (request, response) {
+  const token = request.headers['token']
+  tokenMD.verifyToken(token, async function (error, decode) {
+    // token 过期
+    if (error !== null) {
+      return response.status(403).json({
+        message: 'Token expired...'
+      })
+    }
+
+    try {
+      let userData = await mysqldbMD.selectOne('user', { userEmail: decode.email })
+      userData = userData[0]
+
+      await mysqldbMD.deleteOne('collection', { userId: userData.userId, songId: request.body.songId})
+
+      return response.send('ok')
+    } catch (e) {
+      return response.status(500).json({
+        message: e
+      })
+    }
+  })
+})
+
+router.post('/recommend', function (request, response) {
+  const token = request.headers['token']
+  tokenMD.verifyToken(token, async function (error, decode) {
+    // token 过期
+    if (error !== null) { return response.status(403).json({ message: 'Token expired...' }) }
+
+    try {
+      // 获取用户信息
+      let userData = await mysqldbMD.selectOne('user', { userEmail: decode.email })
+      userData = userData[0]
+      // 获取用户收藏列表 list
+      const list = await mysqldbMD.selectAll('collection', { userId: userData.userId })
+
+      // 获取所有的用户 id [1,2,3]
+      const idList = (await mysqldbMD.selectId('user', userData.userId)).map(v => v.userId)
+
+      const resultList = []
+      for (let i = 0; i < idList.length; i++) {
+        const userCollectionList = await mysqldbMD.selectAll('collection', { userId: idList[i] })
+        if (similarityMD(list, userCollectionList) >= 0.5) {
+          // 用户相似
+          resultList.concat(userCollectionList.filter(v => !(new Set(list)).has(v)))
+        }
+        if (resultList.length >= 4) { break }
+      }
+      console.log(resultList)
+      return response.send('ok')
+    } catch (e) {
+      return response.status(500).json({ message: e })
+    }
+  })
 })
 
 module.exports = router

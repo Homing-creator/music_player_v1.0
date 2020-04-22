@@ -30,8 +30,19 @@ const insert = function (table, param) {
   return operate(`INSERT INTO ${table} SET ?`, param)
 }
 
+const insertMuti = function (table, param) {
+  const columnList = Object.keys(param.list[0])
+  const valueList = []
+  param.list.forEach(item => { valueList.push(Object.values(item)) })
+  return operate(`INSERT INTO ${table} (${columnList.toString()}) VALUES ?`, valueList)
+}
+
 const selectOne = function (table, param) {
   return operate(`SELECT * FROM ${table} WHERE ? LIMIT 1`, param)
+}
+
+const selectId = function (table, id) {
+  return operate(`SELECT userId FROM ${table} WHERE userId<>?`,id)
 }
 
 const selectAll = function (table, param) {
@@ -42,8 +53,55 @@ const selectAll = function (table, param) {
   }
 }
 
+const deleteOne = function (table, param) {
+  const arr = []
+  for (const i in param) {
+    arr.push(`${i}='${param[i]}'`)
+  }
+  return operate(`DELETE FROM ${table} WHERE ${arr.join(' AND ')} LIMIT 1`, param)
+}
+
+const deleteMuti = function (table, param) {
+  return operate(`DELETE FROM ${table} WHERE ${param.key} IN ('${param.list.join(`','`)}')`)
+}
+
+selectId('user', 3).then(res => {
+  console.log(res.map(item => item.userId))
+})
 module.exports = {
   insert,
+  insertMuti,
   selectOne,
-  selectAll
+  selectId,
+  selectAll,
+  deleteOne,
+  deleteMuti
 }
+
+/*
+pool.getConnection(function (err, con) {
+    const query = con.query(`DELETE FROM ${table} WHERE ${arr.join(' AND ')} LIMIT 1`, param, function (err) {
+      if (err) throw err
+    })
+    console.log(query.sql)
+  })
+ */
+/*
+批量插入数据
+var mysql = require('node-mysql');
+var conn = mysql.createConnection({
+    ...
+});
+
+var sql = "INSERT INTO Test (name, email, n) VALUES ?";
+var values = [
+    ['demian', 'demian@gmail.com', 1],
+    ['john', 'john@gmail.com', 2],
+    ['mark', 'mark@gmail.com', 3],
+    ['pete', 'pete@gmail.com', 4]
+];
+conn.query(sql, [values], function(err) {
+    if (err) throw err;
+    conn.end();
+});
+*/

@@ -21,10 +21,10 @@ export function request (config) {
   // 2. axios 的拦截器
   // 2.1 请求拦截
   instance.interceptors.request.use(config => {
-    if (config.baseURL === baseurl.local) {
-      const token = sessionStorage.getItem('token')
-      token && (config.headers.common.Token = token)
-    }
+    // if (config.baseURL === baseurl.local) {
+    //   const token = sessionStorage.getItem('token')
+    //   token && (config.headers.common.Token = token)
+    // }
     // loading 动画
     loadingInstance = Loading.service({
       text: '拼命加载中'

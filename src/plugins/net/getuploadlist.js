@@ -1,11 +1,15 @@
 import { request } from './request'
 import baseurl from '../api/baseurl'
+import vuex from '../../store/index'
 
 export default function () {
   return request({
     baseURL: baseurl.local,
     method: 'post',
-    url: '/uploadlist'
+    url: '/uploadlist',
+    headers: {
+      token: vuex.state.token
+    }
   })
 }
 

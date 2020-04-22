@@ -56,8 +56,6 @@ export default function (data) {
       }
     }
   }).catch(error => {
-    Message.error({
-      message: error
-    })
+    Message.error(error)
   })
 }

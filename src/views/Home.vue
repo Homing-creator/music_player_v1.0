@@ -3,7 +3,9 @@
     <el-header><v-header /></el-header>
     <el-container>
       <el-aside><v-aside /></el-aside>
-      <el-main><v-main /></el-main>
+      <el-scrollbar>
+        <el-main><v-main /></el-main>
+      </el-scrollbar>
     </el-container>
     <el-footer style="height: 80px"><v-footer /></el-footer>
   </el-container>
@@ -39,9 +41,10 @@ export default {
     background-color: $footer-bgc;
   }
   .el-main {
-    /*background-color: #E9EEF3;*/
     color: #333;
     text-align: center;
-    /*line-height: 160px;*/
+  }
+  .el-scrollbar {
+    width: 100%;
   }
 </style>

@@ -11,6 +11,7 @@
           <el-button @click="download()">下载选中</el-button>
           <el-button @click="toggleSelection()">取消选择</el-button>
           <el-button @click="refresh()">刷新</el-button>
+<!--          <a href="http://127.0.0.1:5000/song" download="银临,Aki阿杰 - 牵丝戏.mp3">下载</a>-->
         </div>
         <el-table
           ref="multipleTable"
@@ -19,30 +20,26 @@
           style="width: 100%"
           @selection-change="handleSelectionChange"
           :default-sort="{ prop: 'name', order: 'descending' }">
-          <el-table-column
-            type="selection"
+          <el-table-column type="selection"
             width="55">
           </el-table-column>
-          <el-table-column
-            prop="fileName"
+          <el-table-column prop="fileName"
             label="歌名"
-            width="300"
+            min-width="300"
             sortable
             show-overflow-tooltip>
-            <!--          <template slot-scope="scope">{{ scope.row.date }}</template>-->
           </el-table-column>
-          <el-table-column
-            prop="singer"
+          <el-table-column prop="singer"
             label="歌手"
-            width="150"
+            min-width="150"
             sortable>
             <template slot-scope="{row}">
               {{ row.err || '未知' }}
             </template>
           </el-table-column>
-          <el-table-column
-            prop="size"
-            label="大小">
+          <el-table-column prop="size"
+            label="大小"
+            min-width="150">
             <template slot-scope="{row}">
               {{ (row.size / 1024 / 1024).toFixed(1) + 'Mb' }}
             </template>
@@ -59,7 +56,7 @@
 <script>
 import getUploadList from '../../../plugins/net/getuploadlist'
 import { Message } from 'element-ui'
-import downloadMD from '../../../plugins/net/download'
+import { download } from '../../../plugins/net/download'
 
 export default {
   name: 'UploadTable',
@@ -84,9 +81,7 @@ export default {
     },
     download () {
       if (this.multipleSelection.length > 0) {
-        downloadMD(this.multipleSelection[0].songId).catch(err => {
-          console.log(err)
-        })
+        download(this.multipleSelection)
       }
     },
     refresh () {
@@ -100,7 +95,9 @@ export default {
     }
   },
   mounted () {
-    this.refresh()
+    if (this.$store.state.user !== null) {
+      this.refresh()
+    }
   }
 }
 </script>

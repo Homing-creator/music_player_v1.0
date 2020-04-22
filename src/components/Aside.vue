@@ -52,11 +52,14 @@ export default {
     updateDefaultActive () {
       const list = ['/discovery', '/recommend', '/new', '/musicvideo', '/playing', '/upload']
       const index = list.indexOf(this.$route.path)
-      this.$store.dispatch('updateDefaultActive', index + 1 + '')
+      this.$store.commit('updateDefaultActive', index + 1 + '')
     }
   },
   watch: {
     $route: 'updateDefaultActive'
+  },
+  mounted () {
+    this.updateDefaultActive()
   }
 }
 </script>

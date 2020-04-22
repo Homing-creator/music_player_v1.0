@@ -1,21 +1,25 @@
 <template>
     <el-container>
-      <audio id="audio"
-      :src="musicUrl"
-      @canplay="ready"
-      @timeupdate="setCurrentTime"
-      >
+      <audio
+        v-if="$store.state.dataObj !== null"
+        ref="audio"
+        :src="musicUrl"
+        @canplay="ready"
+        @timeupdate="setCurrentTime"
+        @play="playingStatus(true)"
+        @pause="playingStatus(false)"
+        autoplay>
         Your browser does not support the audio tag.
       </audio>
 <!--      进度条 start *************************************************************-->
       <el-slider v-model="currentTime" :max="maxTime" @change="setTime" :format-tooltip="formatTooltip" id="progress"/>
 <!--      进度条 end *************************************************************-->
 
-      <section class="container" v-if="$store.state.songDetails">
-        <div class="songInfo">
-          <el-avatar shape="square" :size="60" :src="avatar" />
+      <section class="container">
+        <div class="songInfo" v-if="$store.state.dataObj !== null">
+          <el-avatar shape="square" :size="60" :src="$store.state.dataObj.songCover" />
           <div class="titleAndTime">
-            <div class="titleAndAuthor">{{ title }} - {{ author }}</div>
+            <div class="titleAndAuthor">{{ $store.state.dataObj.songName }} - {{ $store.state.dataObj.singer }}</div>
             <div class="time">{{ showCurrentTime }}/{{ showMaxTime }}</div>
           </div>
         </div>
@@ -46,19 +50,33 @@
             :content="playModel">
             <el-button slot="reference"><i class="iconfont" :class="playModelIcon"/></el-button>
           </el-popover>
+<!--          播放列表 *******************************************************-->
           <el-popover
             placement="top-start"
             width="100"
             trigger="hover"
             content="播放列表">
-            <el-button slot="reference"><i class="iconfont icon-yinleliebiaokuai" /></el-button>
+            <el-button slot="reference" v-popover:playlist><i class="iconfont icon-yinleliebiaokuai" /></el-button>
           </el-popover>
+          <el-popover
+            ref="playlist"
+            placement="top-start"
+            width="600">
+            <v-playlist/>
+          </el-popover>
+<!--          收藏列表 *******************************************************-->
           <el-popover
             placement="top-start"
             width="100"
             trigger="hover"
             content="收藏">
-            <el-button slot="reference"><i class="iconfont icon-boshiweb_weishoucang" /></el-button>
+            <el-button slot="reference" v-popover:collectionlist @click="getCollectionData"><i class="iconfont icon-boshiweb_weishoucang" /></el-button>
+          </el-popover>
+          <el-popover
+            ref="collectionlist"
+            placement="top-start"
+            width="600">
+            <v-collectionlist/>
           </el-popover>
         </div>
       </section>
@@ -66,61 +84,79 @@
 </template>
 
 <script>
-import { getMusicdata } from '../plugins/net/main'
+// import { getMusicdata } from '../plugins/net/main'
 import formatTime from '../plugins/api/formatTime'
+import PlayList from './Footer/PlayList'
+import CollectionList from './Footer/CollectionList'
+import getCollectionList from '../plugins/net/getCollectionList'
+import { parseCollectionListData } from '../plugins/api/parseData'
 
 export default {
   name: 'Footer',
+  components: {
+    'v-playlist': PlayList,
+    'v-collectionlist': CollectionList
+  },
   data () {
     return {
       currentTime: 0,
       maxTime: 0,
-      title: this.$store.state.songDetails.songs[0].name,
-      author: this.$store.state.songDetails.songs[0].ar[0].name,
-      alia: this.$store.state.songDetails.songs[0].alia[0],
-      avatar: this.$store.state.songDetails.songs[0].al.picUrl,
+      // songName: this.$store.state.dataObj.songName,
+      // songCover: this.$store.state.dataObj.songCover,
+      // singer: this.$store.state.dataObj.singer,
       isPlay: false,
       playModel: '顺序播放',
       playModelIcon: 'icon-ttpodicon',
       volume: 100,
-      isMuted: false
+      isMuted: false,
+      drawer: false
     }
   },
   methods: {
-    ready () {
-      const obj = document.getElementById('audio')
+    ready (e) {
+      const obj = e.target
       this.maxTime = obj.duration
-      this.$store.commit('setPlayStatus', 0)
+      // this.$store.commit('setPlayStatus', 0)
     },
     togglePlay () {
-      const audioObj = document.getElementById('audio')
-      if (this.$store.state.playStatus === 0) {
+      const audioObj = this.$refs.audio
+      // const audioObj = document.getElementById('audio')
+      if (this.$refs.audio) {
         if (this.isPlay) {
           audioObj.pause()
         } else {
           audioObj.play()
         }
-        this.isPlay = !this.isPlay
       }
     },
     setCurrentTime (e) {
       this.currentTime = e.target.currentTime
     },
     setTime (timeNum) {
-      document.getElementById('audio').currentTime = timeNum
-      // this.$store.commit('setPlayStatus', 1)
-      // this.play()
+      // const obj = document.getElementById('audio')
+      this.$refs.audio.currentTime = timeNum
     },
     formatTooltip (val) {
       return formatTime(val)
     },
     setVolume (volumeNum) {
-      document.getElementById('audio').volume = volumeNum / 100
+      this.$refs.audio.volume = volumeNum / 100
       this.isMuted = volumeNum === 0
     },
     setMuted () {
-      this.isMuted = true
-      this.volume = 0
+      this.isMuted = !this.isMuted
+      this.$refs.audio.muted = this.isMuted
+    },
+    playingStatus (boolean) {
+      this.isPlay = boolean
+    },
+    getCollectionData () {
+      if (this.$store.state.user === null) {
+        return false
+      }
+      getCollectionList(this.$store.state.token).then(response => {
+        this.$store.commit('setCollectionList', parseCollectionListData(response.data.list))
+      })
     }
   },
   computed: {
@@ -131,19 +167,19 @@ export default {
       return formatTime(this.maxTime)
     },
     musicUrl () {
-      const id = this.$store.state.dataObj.data[0].id
+      const id = this.$store.state.dataObj.songId
       return 'https://music.163.com/song/media/outer/url?id=' + id + '.mp3'
     }
   },
   watch: {
   },
   created () {
-    getMusicdata()
-      .then(res => {
-        this.$store.commit('setDataObj', res.data)
-      }).catch(err => {
-        console.log(err)
-      })
+    // getMusicdata()
+    //   .then(res => {
+    //     this.$store.commit('setDataObj', res.data)
+    //   }).catch(err => {
+    //     console.log(err)
+    //   })
   }
 }
 </script>
@@ -155,6 +191,7 @@ export default {
     width: 100%;
     position: absolute;
     top: -22px;
+    overflow: hidden;
   }
   .container {
     display: flex;

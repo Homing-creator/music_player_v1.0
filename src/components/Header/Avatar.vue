@@ -29,6 +29,7 @@ export default {
         sessionStorage.clear()
         this.$store.commit('setUser', null)
         this.$store.commit('setToken', '')
+        this.$store.commit('setCollectionList', [])
       } else {
         this.$router.push(command)
       }

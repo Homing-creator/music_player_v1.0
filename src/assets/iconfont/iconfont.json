@@ -6,6 +6,34 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "6883934",
+      "name": "play",
+      "font_class": "play",
+      "unicode": "e6eb",
+      "unicode_decimal": 59115
+    },
+    {
+      "icon_id": "7611203",
+      "name": "play",
+      "font_class": "play1",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    },
+    {
+      "icon_id": "8275397",
+      "name": "play",
+      "font_class": "play2",
+      "unicode": "ebbb",
+      "unicode_decimal": 60347
+    },
+    {
+      "icon_id": "10456549",
+      "name": "播放",
+      "font_class": "bofang1",
+      "unicode": "e603",
+      "unicode_decimal": 58883
+    },
+    {
       "icon_id": "11493140",
       "name": "上 传",
       "font_class": "shangchuan",

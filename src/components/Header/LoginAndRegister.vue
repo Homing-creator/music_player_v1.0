@@ -21,7 +21,6 @@
               <el-form-item label="密 码：">
                 <el-input type="password" v-model="loginForm.userPassword" autocomplete="new-password" show-password @keyup.native="loginKeyDown" clearable placeholder="请输入密码"/>
                 <div style="height:15px">
-                  &nbsp;
                   <el-tag v-show="bigChar" style="margin-left:20px">
                     大写锁定已打开
                   </el-tag>
@@ -163,9 +162,7 @@ export default {
         if (valid) {
           register(this.registerForm)
         } else {
-          Message.error({
-            message: '请完善表单...'
-          })
+          Message.error('请完善表单...')
           return false
         }
       })
@@ -199,8 +196,6 @@ export default {
         }
       }
     }
-  },
-  created () {
   },
   mounted () {
     // 登录状态保持

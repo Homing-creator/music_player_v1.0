@@ -12,6 +12,8 @@
     "core-js": "^3.6.4",
     "crypto-js": "^4.0.0",
     "element-ui": "^2.4.5",
+    "file-saver": "^2.0.2",
+    "jszip": "^3.3.0",
     "normalize.css": "^8.0.1",
     "qs": "^6.9.3",
     "vue": "^2.6.11",
