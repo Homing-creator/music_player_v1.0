@@ -41,8 +41,12 @@ const selectOne = function (table, param) {
   return operate(`SELECT * FROM ${table} WHERE ? LIMIT 1`, param)
 }
 
-const selectId = function (table, id) {
+const selectUserId = function (table, id) {
   return operate(`SELECT userId FROM ${table} WHERE userId<>?`,id)
+}
+
+const selectSongId = function (table, param) {
+  return operate(`SELECT songId, songName, singer, songCover FROM ${table} WHERE ?`, param)
 }
 
 const selectAll = function (table, param) {
@@ -65,14 +69,12 @@ const deleteMuti = function (table, param) {
   return operate(`DELETE FROM ${table} WHERE ${param.key} IN ('${param.list.join(`','`)}')`)
 }
 
-selectId('user', 3).then(res => {
-  console.log(res.map(item => item.userId))
-})
 module.exports = {
   insert,
   insertMuti,
   selectOne,
-  selectId,
+  selectUserId,
+  selectSongId,
   selectAll,
   deleteOne,
   deleteMuti

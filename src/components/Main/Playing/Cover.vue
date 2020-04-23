@@ -2,8 +2,8 @@
     <div id="cover-container">
       <div id="cover-black">
         <div id="cover-transparent">
-          <img v-if="imgUrl === null" src="../../../assets/images/jitai.png" alt=""/>
-          <img v-else :src="imgUrl" alt="">
+          <img v-if="$store.state.dataObj.songCover === null" src="../../../assets/images/jitai.png" alt=""/>
+          <img v-else :src="$store.state.dataObj.songCover" alt="">
         </div>
       </div>
     </div>
@@ -11,12 +11,7 @@
 
 <script>
 export default {
-  name: 'Cover',
-  data () {
-    return {
-      imgUrl: 'https://p2.music.126.net/Mqj2AlBSRo3jdE1wB2DnIQ==/109951163335585093.jpg'
-    }
-  }
+  name: 'Cover'
 }
 </script>
 

@@ -1,7 +1,7 @@
 <template>
     <section class="container">
-      <span @click="back"><i class="el-icon-arrow-left"></i></span>
-      <span @click="forward"><i class="el-icon-arrow-right"></i></span>
+      <span @click="back"><i class="el-icon-arrow-left"/></span>
+      <span @click="forward"><i class="el-icon-arrow-right"/></span>
     </section>
 </template>
 
@@ -26,7 +26,7 @@ export default {
   color: #fff;
   span {
     &:hover {
-      background-color: gray;
+      /*color: #D74D45;*/
       cursor: pointer;
     }
   }

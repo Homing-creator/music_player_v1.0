@@ -1,17 +1,19 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-// import dataObj from '../assets/testdata'
-import songDetails from '../assets/songdetails'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    // 当前 aside 所在
     defaultActive: '1',
+    // 当前播放歌曲
     dataObj: null, // {songId, songName, songCover, singer}
+    // 播放列表
     playList: [],
+    // 收藏列表
     collectionList: [],
-    songDetails,
+    // songDetails,
     // 播放状态：0 就绪，1 播放中，2 暂停中
     playStatus: 0,
     // 控制播放器自动播放
@@ -20,7 +22,9 @@ export default new Vuex.Store({
     user: null,
     // loginAndRegister 窗口
     loginAndRegisterDialogVisible: false,
-    token: ''
+    token: '',
+    // 搜索结果
+    searchList: null
   },
   mutations: {
     // 设置 Aside 的当前 active 标签
@@ -78,6 +82,9 @@ export default new Vuex.Store({
     },
     setCollectionList (state, list) {
       state.collectionList = list
+    },
+    setSearchList (state, list) {
+      state.searchList = list
     }
   },
   actions: {

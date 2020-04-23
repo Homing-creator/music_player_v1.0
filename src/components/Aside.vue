@@ -11,21 +11,13 @@
       </el-menu-item>
       <el-menu-item index="2" @click="$router.push('/recommend')">
         <i class="iconfont icon-yinleliebiaokuai"/>
-        <span slot="title">推荐歌单</span>
+        <span slot="title">推荐歌曲</span>
       </el-menu-item>
-      <el-menu-item index="3" @click="$router.push('/new')">
-        <i class="iconfont icon-yinyue"/>
-        <span slot="title">最新音乐</span>
-      </el-menu-item>
-      <el-menu-item index="4" @click="$router.push('/musicvideo')">
-        <i class="iconfont icon-mv"/>
-        <span slot="title">推荐MV</span>
-      </el-menu-item>
-      <el-menu-item index="5" @click="$router.push('/playing')">
+      <el-menu-item index="3" @click="$router.push('/playing')">
         <i class="iconfont icon-ting"/>
         <span slot="title">正在播放</span>
       </el-menu-item>
-      <el-menu-item index="6" @click="$router.push('/upload')">
+      <el-menu-item index="4" @click="$router.push('/upload')">
         <i class="iconfont icon-shangchuan"/>
         <span slot="title">上传/下载</span>
       </el-menu-item>
@@ -50,7 +42,8 @@ export default {
       window.console.log(key, keyPath)
     },
     updateDefaultActive () {
-      const list = ['/discovery', '/recommend', '/new', '/musicvideo', '/playing', '/upload']
+      // const list = ['/discovery', '/recommend', '/new', '/musicvideo', '/playing', '/upload']
+      const list = ['/discovery', '/recommend', '/playing', '/upload']
       const index = list.indexOf(this.$route.path)
       this.$store.commit('updateDefaultActive', index + 1 + '')
     }

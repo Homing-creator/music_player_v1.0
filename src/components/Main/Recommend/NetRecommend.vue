@@ -60,21 +60,14 @@ export default {
   #netrec-container {
     display: flex;
     flex-flow: row wrap;
-    justify-content: space-evenly;
-    /*padding-left: 30px;*/
-    /*align-content: center;*/
-    /*&:after {*/
-    /*  content: '';*/
-    /*  flex: auto;*/
-    /*}*/
+    justify-content: flex-start;
     .el-card {
       min-width: 200px;
       width: 270px;
       transition: all .5s;
-      margin-bottom: 10px;
       position: relative;
       cursor: pointer;
-      /*margin-right: 10px;*/
+      margin: 20px;
       &:hover{
         transform: translateY(-5px);
         &:after {

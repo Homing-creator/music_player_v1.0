@@ -1,17 +1,21 @@
 <template>
   <div>
-    <div id="playing-container">
-      <v-cover/>
-      <section>
-        <h1>{{ this.$store.state.songDetails.songs[0].name }}</h1>
-        <h4>歌手：{{ this.$store.state.songDetails.songs[0].ar[0].name }}</h4>
-        <el-divider/>
-        <v-lyric/>
-      </section>
-    </div>
-    <div>
-      <v-comment/>
-    </div>
+    <h1 v-if="$store.state.dataObj === null">当前未播放歌曲</h1>
+    <section v-else>
+      <div id="playing-container">
+        <v-cover/>
+        <section>
+          <h1>{{ this.$store.state.dataObj.songName }}</h1>
+          <h4>歌手：{{ this.$store.state.dataObj.singer }}</h4>
+          <el-divider/>
+          <v-lyric/>
+          <el-divider/>
+        </section>
+      </div>
+      <div>
+        <v-comment/>
+      </div>
+    </section>
   </div>
 </template>
 

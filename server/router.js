@@ -384,23 +384,30 @@ router.post('/recommend', function (request, response) {
       // 获取用户信息
       let userData = await mysqldbMD.selectOne('user', { userEmail: decode.email })
       userData = userData[0]
-      // 获取用户收藏列表 list
-      const list = await mysqldbMD.selectAll('collection', { userId: userData.userId })
+      // 获取用户收藏列表 list [{songId, songName, singer, songCover}, {}]
+      const list = await mysqldbMD.selectSongId('collection', { userId: userData.userId })
+      const songIdLista = list.map(value => value.songId)
 
       // 获取所有的用户 id [1,2,3]
-      const idList = (await mysqldbMD.selectId('user', userData.userId)).map(v => v.userId)
+      const idList = (await mysqldbMD.selectUserId('user', userData.userId)).map(v => v.userId)
 
-      const resultList = []
+      let resultList = []
       for (let i = 0; i < idList.length; i++) {
-        const userCollectionList = await mysqldbMD.selectAll('collection', { userId: idList[i] })
-        if (similarityMD(list, userCollectionList) >= 0.5) {
+        // [{songId, songName, singer, songCover}, {}]
+        const userCollectionList = await mysqldbMD.selectSongId('collection', { userId: idList[i] })
+        const songIdListb = userCollectionList.map(value => value.songId)
+
+        const similar = similarityMD(songIdLista, songIdListb)
+        if (similar >= 0.1) {
           // 用户相似
-          resultList.concat(userCollectionList.filter(v => !(new Set(list)).has(v)))
+          const similarList = userCollectionList.filter(v => !songIdLista.includes(v.songId))
+          resultList = resultList.concat(similarList)
         }
         if (resultList.length >= 4) { break }
       }
-      console.log(resultList)
-      return response.send('ok')
+      return response.status(200).json({
+        list: resultList
+      })
     } catch (e) {
       return response.status(500).json({ message: e })
     }

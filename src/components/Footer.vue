@@ -8,6 +8,7 @@
         @timeupdate="setCurrentTime"
         @play="playingStatus(true)"
         @pause="playingStatus(false)"
+        @ended="nextSong"
         autoplay>
         Your browser does not support the audio tag.
       </audio>
@@ -17,18 +18,19 @@
 
       <section class="container">
         <div class="songInfo" v-if="$store.state.dataObj !== null">
-          <el-avatar shape="square" :size="60" :src="$store.state.dataObj.songCover" />
+          <el-avatar v-if="$store.state.dataObj.songCover === null" shape="square" :size="60" :src="defaultAvatar" />
+          <el-avatar v-else shape="square" :size="60" :src="$store.state.dataObj.songCover" />
           <div class="titleAndTime">
             <div class="titleAndAuthor">{{ $store.state.dataObj.songName }} - {{ $store.state.dataObj.singer }}</div>
             <div class="time">{{ showCurrentTime }}/{{ showMaxTime }}</div>
           </div>
         </div>
         <div class="controller">
-          <button class="prev"><i class="iconfont icon-SanMiAppglyphico"/></button>
+          <button @click="preSong" class="prev"><i class="iconfont icon-SanMiAppglyphico"/></button>
           <button @click="togglePlay" class="play">
             <i class="iconfont" :class="[ isPlay ? 'icon-bofangzanting':'icon-bofang']" />
           </button>
-          <button class="next"><i class="iconfont icon-SanMiAppglyphico"/></button>
+          <button @click="nextSong" class="next"><i class="iconfont icon-SanMiAppglyphico"/></button>
         </div>
         <div class="menu">
           <el-popover
@@ -48,7 +50,7 @@
             width="100"
             trigger="hover"
             :content="playModel">
-            <el-button slot="reference"><i class="iconfont" :class="playModelIcon"/></el-button>
+            <el-button @click="setPlayModel" slot="reference"><i class="iconfont" :class="playModelIcon"/></el-button>
           </el-popover>
 <!--          播放列表 *******************************************************-->
           <el-popover
@@ -84,12 +86,13 @@
 </template>
 
 <script>
-// import { getMusicdata } from '../plugins/net/main'
+import { Message } from 'element-ui'
 import formatTime from '../plugins/api/formatTime'
 import PlayList from './Footer/PlayList'
 import CollectionList from './Footer/CollectionList'
 import getCollectionList from '../plugins/net/getCollectionList'
 import { parseCollectionListData } from '../plugins/api/parseData'
+import playmodel from '../plugins/api/playmodel'
 
 export default {
   name: 'Footer',
@@ -101,15 +104,16 @@ export default {
     return {
       currentTime: 0,
       maxTime: 0,
-      // songName: this.$store.state.dataObj.songName,
-      // songCover: this.$store.state.dataObj.songCover,
-      // singer: this.$store.state.dataObj.singer,
       isPlay: false,
+      modelList: ['顺序播放', '单曲循环', '列表循环', '随机播放'],
       playModel: '顺序播放',
+      iconList: ['icon-ttpodicon', 'icon-icon-', 'icon-icon-1', 'icon-icon-2'],
       playModelIcon: 'icon-ttpodicon',
+      playModelFunction: playmodel.sequence,
       volume: 100,
       isMuted: false,
-      drawer: false
+      drawer: false,
+      defaultAvatar: require('../assets/images/jitai.png')
     }
   },
   methods: {
@@ -157,6 +161,58 @@ export default {
       getCollectionList(this.$store.state.token).then(response => {
         this.$store.commit('setCollectionList', parseCollectionListData(response.data.list))
       })
+    },
+    setPlayModel () {
+      const index = this.modelList.indexOf(this.playModel)
+      const next = (index + 1) % this.modelList.length
+      this.playModel = this.modelList[next]
+      this.playModelIcon = this.iconList[next]
+      const functionList = Object.keys(playmodel)
+      this.playModelFunction = playmodel[functionList[next]]
+    },
+    preSong () {
+      if (this.$store.state.dataObj === null) return
+      // 当前歌曲
+      const song = this.$store.state.dataObj
+      // 播放列表
+      const playList = this.$store.state.playList
+      // 当前歌曲的 index
+      let index = 0
+      for (let i = 0; i < playList.length; i++) {
+        if (playList[i].songId === song.songId) {
+          index = i
+          break
+        }
+      }
+      // 获取上一首歌的 index
+      const nextIndex = this.playModelFunction(index, playList.length, false)
+      if (nextIndex >= 0) {
+        this.$store.commit('setDataObj', playList[nextIndex])
+      } else {
+        return Message.error('没有上一首了')
+      }
+    },
+    nextSong () {
+      if (this.$store.state.dataObj === null) return
+      // 当前歌曲
+      const song = this.$store.state.dataObj
+      // 播放列表
+      const playList = this.$store.state.playList
+      // 当前歌曲的 index
+      let index = 0
+      for (let i = 0; i < playList.length; i++) {
+        if (playList[i].songId === song.songId) {
+          index = i
+          break
+        }
+      }
+      // 获取下一首歌的 index
+      const nextIndex = this.playModelFunction(index, playList.length, true)
+      if (nextIndex >= 0) {
+        this.$store.commit('setDataObj', playList[nextIndex])
+      } else {
+        return Message.error('没有下一首了')
+      }
     }
   },
   computed: {
@@ -170,16 +226,6 @@ export default {
       const id = this.$store.state.dataObj.songId
       return 'https://music.163.com/song/media/outer/url?id=' + id + '.mp3'
     }
-  },
-  watch: {
-  },
-  created () {
-    // getMusicdata()
-    //   .then(res => {
-    //     this.$store.commit('setDataObj', res.data)
-    //   }).catch(err => {
-    //     console.log(err)
-    //   })
   }
 }
 </script>
@@ -188,10 +234,9 @@ export default {
 .el-container {
   position: relative;
   #progress {
-    width: 100%;
+    width: calc(100%);
     position: absolute;
     top: -22px;
-    overflow: hidden;
   }
   .container {
     display: flex;
@@ -202,10 +247,13 @@ export default {
     .songInfo {
       display: flex;
       flex-direction: row;
+      width: 400px;
+      overflow: hidden;
       .titleAndTime {
         display: flex;
         flex-direction: column;
         justify-content: center;
+        margin-left: 10px;
         .titleAndAuthor {
           font-size: 18px;
           line-height: 34px;
@@ -247,7 +295,7 @@ export default {
         height: 40px;
         outline: none;
         font-weight: bold;
-        color: black;
+        color: #D74D45;
         i {
           font-weight: normal;
           font-size: 30px;

@@ -20,7 +20,7 @@ export default {
     }
   },
   mounted () {
-    getlyric(405998841).then(response => {
+    getlyric(this.$store.state.dataObj.songId).then(response => {
       this.lyricData = parseLyric(response.data.lrc.lyric)
     })
   }
@@ -30,10 +30,12 @@ export default {
 <style scoped lang="scss">
 #lyric-container {
   height: 400px;
+  width: 400px;
   #lyric-scrollbar {
     height: 100%;
     #lyric-list {
       padding: 0;
+      width: 100%;
       li {
         list-style: none;
         line-height: 36px;

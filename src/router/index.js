@@ -2,8 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Discovery from '../components/Main/Discovery'
-import Musicvideo from '../components/Main/Musicvideo'
-import New from '../components/Main/New'
+// import Musicvideo from '../components/Main/Musicvideo'
+// import New from '../components/Main/New'
 import Recommend from '../components/Main/Recommend'
 import Upload from '../components/Main/Upload'
 import Playing from '../components/Main/Playing'
@@ -46,16 +46,16 @@ const routes = [
     name: 'Discovery',
     component: Discovery
   },
-  {
-    path: '/musicvideo',
-    name: 'Musicvideo',
-    component: Musicvideo
-  },
-  {
-    path: '/new',
-    name: 'New',
-    component: New
-  },
+  // {
+  //   path: '/musicvideo',
+  //   name: 'Musicvideo',
+  //   component: Musicvideo
+  // },
+  // {
+  //   path: '/new',
+  //   name: 'New',
+  //   component: New
+  // },
   {
     path: '/recommend',
     name: 'Recommend',
